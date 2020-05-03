@@ -3,7 +3,7 @@
 ;; Copyright (C) 2020 Yoshihiro Ohtani
 
 ;; Author: Yoshihiro Ohtani
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; Package-Requires: ((f "0.20.0") (s "1.12.0"))
 ;; Keywords: tools, c
 
@@ -70,7 +70,7 @@
 								  hide-ifdef-define-alist)
 						  nil t)))
   (if (stringp name) (setq name (intern name)))
-  (let ((define-list (assoc name hide-ifdef-define-alis1t)))
+  (let ((define-list (assoc name hide-ifdef-define-alist)))
 	(if define-list
 		(setq hide-ifdef-env
 			  ;; If arg is cons like (MACRO . VALUE), use arg.

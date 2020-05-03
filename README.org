@@ -10,6 +10,9 @@ hideif-extension is an extension for hideif.el.
 
 * Changelog
 
+- <2020-05-03 Sun 22:01>
+  - Bugfix about spell miss of hide-ifdef-define-alist in hideif-extension.el.
+
 - <2020-05-03 Sun 16:29>
   - Create a new entry
 
