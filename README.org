@@ -1,0 +1,300 @@
+#+STARTUP: showall
+#+TITLE:    hideif-extension
+#+AUTHOR:   Yoshihiro Ohtani
+#+OPTIONS: ^:{}
+
+* Abstract
+
+hideif-extension is an extension for hideif.el.
+
+
+* Changelog
+
+- <2020-05-03 Sun 16:29>
+  - Create a new entry
+
+
+* Background
+
+hideif.el is a build in library of GNU Emacs, that provide the function
+hide each #ifdef/#if/#elif/#else... code blocks of C/C++ source code.
+
+hideif.el can analyse macros from the source code of the buffer, 
+but hideif.el does not provide the function to analyse macros 
+defined in other source codes, or the macros defined when 
+the build command is running.[fn:1]
+If you want to define the macros in these case,
+you need to set the macros to the value ~hide-ifdef-define-alist~.
+
+But hideif.el has the limitations described below.
+
+- hideif.el does not provide the function to set the macros to ~hide-ifdef-define-alist~ automatically.
+  - So it is difficult to set all macros accurately in the case that needs to set a lot of macros.
+
+- hideif.el does not provide the function to analyse a pair of macro and value from ~hide-ifdef-define-alist~.[fn:2]
+  - So it is not able to hide the code blocks have a macro with a value accurately.
+
+- hideif.el does not provide the function to set different alist to each source files.
+  - So it is not able to hide source codes have different macros accurately.
+
+
+* Functions
+
+hideif-extension provide these functions.
+
+- Set the macros to ~hide-ifdef-define-alist~ automatically.
+  - But it is needed use the shell script mkmcrdb.sh.
+
+- Analyse a pair of macro and value from ~hide-ifdef-define-alist~.
+
+- Set different alist to each source files.
+
+
+* Attention
+
+hideif-extension is an extension/addition tool of hideif.el.
+So hideif-extension use original hideif.el to the analyser of code blocks to hide.
+
+In the process of using hideif.el, hideif-extension changes 
+the value ~hide-ifdef-env~ from a global value to a local value.
+hideif.el use ~hide-ifdef-env~ in global value, so it is not able to
+ use different macros to each source files.
+hideif-extension needs to use different macros to each files, 
+so it changes ~hide-ifdef-env~ from a global value to a local value.
+
+In the past hideif.el use ~hide-ifdef-env~ as local value, but ~hide-ifdef-env~ was changed to a global value.
+hideif.el will use ~hide-ifdef-env~ as a global value also in the future, 
+so hideif-extension has a possibility it could not work if hideif.el will chage huge in new version.
+
+
+* Install
+
+1. Copy mkmcrdb.sh to the directory that is included in the executable path.
+
+2. Copy hideif-extension.el to the directory that is included in the load-path of Emacs.
+
+3. Add below code in your .emacs.
+
+    #+BEGIN_SRC emacs-lisp
+    (require 'hideif-extension)
+    #+END_SRC
+    
+
+* How to use
+
+** Overview
+
+1. Make macro database directory(.mcrdb) and macro database files(*.mdb) 
+   in your source code directory using mkmcrdb.sh.
+
+2. Open C/C++ source code in Emacs, and into c-mode/c++-mode.
+
+3. Enable hideif-mode, and run M-x hide-ifdefs.
+
+
+** Example
+
+*** Environment
+
+- The source code directory is ~$SRCDIR~, and the source code directory
+  has a C source code hoge.h, hoge.h, and subdir/fuga.h like below.
+
+        : $SRCDIR/
+        :   |- hoge.h
+        :   |- hoge.c
+        :   |- subdir/
+        :        |- fuga.h
+    
+
+- The contents of each source codes are like below.
+
+  - hoge.h
+
+    #+BEGIN_SRC c
+    #define HOGE
+    #+END_SRC
+
+  - hoge.c
+
+    #+BEGIN_SRC c
+    #include <stdio.h>
+    #include "hoge.h"
+    #include <fuga.h>
+    
+    #define AAA 10
+    #define BBB 20
+    
+    int
+    main(int argc, char *argv[])
+    {
+    
+    #ifdef HOGE
+        printf("HOGE is defined.\n");
+    #endif
+        
+    #if FUGA == 1
+        printf("FUGA is 1.\n");
+    #elif FUGA == 2
+        printf("FUGA is 2.\n");
+    #else
+        printf("FUGA is more than 2.\n");
+    #endif  
+        
+    #if PIYO == AAA
+        printf("PIYO is AAA.\n");
+    #elif PIYO == BBB
+        printf("PIYO is BBB.\n");
+    #else
+        printf("PIYO is not AAA or BBB.\n");
+    #endif
+    
+        return 0;
+    }
+    #+END_SRC
+
+  - subdir/fuga.h
+
+    #+BEGIN_SRC c
+    #define FUGA    2
+    #+END_SRC
+
+- The build command in ~$SRCDIR~ is below.
+    
+    : % gcc -Isubdir -DPIYO=BBB -o hoge hoge.c
+
+- The result of execution hoge is below.
+
+    : % ./hoge
+    : HOGE is defined.
+    : FUGA is 2.
+    : PIYO is BBB.
+
+
+*** Procedure
+
+1. Execute mkmcrdb.sh with options ~-Isubdir~ and ~-DPIYO=BBB~.
+
+        : % mkmcrdb.sh -Isubdir -DPIYO=BBB $SRCDIR
+
+2. Macro database directory and macro database files will be made like below.
+        
+        : $SRCDIR/
+        :   |- hoge.h
+        :   |- hoge.c
+        :   |- subdir/
+        :   |    |- fuga.h
+        :   |- .mcrdb/
+        :        |- hoge.h.mdb
+        :        |- hoge.c.mdb
+        :        |- subdir/
+        :             |- fuga.h.mdb
+        
+3. Open hoge.c in Emacs and into c-mode.
+
+4. ~$SRCDIR/.mcrdb/hoge.c.mdb~ will be read and ~hide-ifdef-define-alist~ will be
+   added new element that made from ~$SRCDIR/.mcrdb/hoge.c.mdb~ automatically.
+   - The contents of ~$SRCDIR/.mcrdb/hoge.c.mdb~ is like below.
+
+        : # gcc -dM -E -DPIYO=BBB -Isubdir -I./ hoge.c
+        : AAA 10
+        : BBB 20
+        : FUGA 2
+        : HOGE
+        : PIYO BBB
+        : ...
+   
+   - Each elements of the hide-ifdef-define-alist are like below.
+    
+        #+BEGIN_SRC emacs-lisp
+        (FILE-NAME MACRO_NAME1 MACRO_NAME2 (MACRO_NAME3 . MACRO_VALUE3)  (MACRO_NAME4 . MACRO_VALUE4) ...)
+        #+END_SRC
+     
+     - First element is symbolized file path name of the source file.
+     - Second element and the after are /MACRO_NAME/ if the macro does not have a value, 
+       or /(MACRO_NAME . MACRO_VALUE)/ if the macro has a value.
+   
+   - In this case the value of ~hide-ifdef-define-alist~ is like below.
+    
+        #+BEGIN_SRC emacs-lisp
+        (($SRCDIR/hoge\.c
+          (AAA . 10)
+          (BBB . 20)
+          (FUGA . 2)
+          HOGE
+          (PIYO . BBB)
+          ; Other macros of hoge.c defined in stdio.h and the system.
+          ##)
+         ; Other alists of hide-ifdef-define-alist
+         )
+        #+END_SRC
+
+5. Run M-x hide-ifdef-mode and into hide-ifdef-mode.
+
+6. Run M-x hide-ifdefs then hoge.c will be hidden the code blocks disabled like below.
+        
+    #+BEGIN_SRC c
+    #include <stdio.h>
+    #include "hoge.h"
+    #include <fuga.h>
+    
+    #define AAA 10
+    #define BBB 20
+    
+    int
+    main(int argc, char *argv[])
+    {
+    
+    #ifdef HOGE
+        printf("HOGE is defined.\n");
+    #endif
+        
+    #if FUGA == 1...
+    #elif FUGA == 2
+        printf("FUGA is 2.\n");
+    #else...
+    #endif  
+        
+    #if PIYO == AAA...
+    #elif PIYO == BBB
+        printf("PIYO is BBB.\n");
+    #else...
+    #endif
+    
+        return 0;
+    }
+    #+END_SRC
+        
+** Others
+
+More details about mkmcrdb.sh, see the help of it.
+
+        : % mkmcrdb.sh -h
+        : Make macro database *.mdb for C/C++ source code.
+        : 
+        : Usage: mkmcrdb.sh [-I include paths] [-D define options] [-t type] [-c compile command] [-m show macro option] directories.
+        : 
+        :     -I: Include paths. This option can be set multiple separate with ':'.
+        :         ex. Set include paths like -I/usr/include -I/usr/local/include.
+        :                 -I /usr/include:/usr/local/include
+        :     -D: Define options. This option can be set multiple separate with ':'.
+        :         ex. Set define options like -DHOGE -DFUGA=1.
+        :                 -D HOGE:FUGA=1
+        :     -t: Type of source code.
+        :         - c: C
+        :         - c++: C++
+        :         Default value is c.
+        :     -c: Compile command.
+        :         Default value is below.
+        :         - if option -t is c: gcc
+        :         - if option -t is c++: g++
+        :     -m: Options for compile command to show macro definition.
+        :         Default value is "-dM -E"
+        :     directories: Directories path that make macro database.
+        :                  Macro database directories .mcrdb that include
+        :                  macro database files *.mdb, are made in each directories
+        :                  these are specified this option.
+
+
+[fn:1] As far as I researched.
+[fn:2] hideif.el can set a pair of the macro and value using the function ~hide-ifdef-define~, 
+       and it also can analyse a pair of the macro and value from the source code of the buffer.
