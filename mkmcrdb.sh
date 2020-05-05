@@ -3,7 +3,7 @@
 ## Copyright (C) 2020 Yoshihiro Ohtani
 
 # Author: Yoshihiro Ohtani
-# Version: 0.1.0
+# Version: 0.1.1
 
 ## License:
 
@@ -123,7 +123,7 @@ cur_dir=`pwd`
 for dir in $DIR
 do
     # Move the directory.
-    cd $dir
+    cd $cur_dir/$dir
     
     # C/C++ source directories.
     src_dir=`find ./ -type d | sed 's/^\.\/*//' | grep -v \.ccls-cache | grep -v build | grep -v ${MCRDB_DIR}`

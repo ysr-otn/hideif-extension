@@ -10,6 +10,9 @@ hideif-extension is an extension for hideif.el.
 
 * Changelog
 
+- <2020-05-05 Tue 22:19>
+  - Bugfix when multiple directories are specified by option of mkmcrdb.sh.
+
 - <2020-05-03 Sun 22:01>
   - Bugfix about spell miss of hide-ifdef-define-alist in hideif-extension.el.
 
@@ -299,5 +302,6 @@ More details about mkmcrdb.sh, see the help of it.
 
 
 [fn:1] As far as I researched.
+
 [fn:2] hideif.el can set a pair of the macro and value using the function ~hide-ifdef-define~, 
        and it also can analyse a pair of the macro and value from the source code of the buffer.
