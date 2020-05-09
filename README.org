@@ -11,7 +11,7 @@ hideif-extension is an extension for hideif.el.
 * Changelog
 
 - <2020-05-10 Sun 00:52>
-  - Fix a typo in [[Environment]].
+  - Fix a typo in 'Environment'.
 
 - <2020-05-05 Tue 22:19>
   - Bugfix when multiple directories are specified by option of mkmcrdb.sh.
