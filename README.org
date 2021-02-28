@@ -10,6 +10,10 @@ hideif-extension is an extension for hideif.el.
 
 * Changelog
 
+- <2021-02-28 Sun 22:39>
+  - Add a function that calculate 'MacroValue' to a number, to mkmcrdb.sh.
+  - Add [[Note][Note]].
+
 - <2020-05-05 Tue 22:19>
   - Bugfix when multiple directories are specified by option of mkmcrdb.sh.
 
@@ -71,6 +75,11 @@ so it changes ~hide-ifdef-env~ from a global value to a local value.
 In the past hideif.el use ~hide-ifdef-env~ as local value, but ~hide-ifdef-env~ was changed to a global value.
 hideif.el will use ~hide-ifdef-env~ as a global value also in the future, 
 so hideif-extension has a possibility it could not work if hideif.el will chage huge in new version.
+
+
+* Note
+
+mkmcrdb.sh needs python. So install a python environment before use.
 
 
 * Install

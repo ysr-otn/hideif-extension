@@ -174,10 +174,19 @@ do
         echo \# $CC $MCR_OPT $DEFINES $INCLUDES $i > $ofile
         # If the macro does not have a value, write 'MacroName' to the macro database file.
         # If the macro have a value, write 'MacroName MacroValue' to the macro database file.
-        $CC $MCR_OPT $DEFINES $INCLUDES $i \
-            | grep -e "#define[ \t]*[A-z0-9_ \t]*$"\
-            | awk '{if(NF == 2){printf("%s\n", $2)} else if(NF == 3){printf("%s %s\n", $2, $3)}  }' \
-                  >>  $ofile
+		# The detail of each pipe line sequences described below.
+		# 1. tr: Convert line feed code CR + LF to LF.
+        # 2. grep: Grep macro definition.
+        # 3. awk: Print 'MacroName' and 'MacroValue'.
+		# 4. python: If 'MacroValue' is a formula then calculate 'MacroValue' to a number, otherwise print 'MacroValue' as it is.
+		# 5. tr: Convert line feed code CR + LF to LF.
+		$CC $MCR_OPT $DEFINES $INCLUDES $i \
+			| tr -d \\r \
+			| grep -e "^[ \t]*#define[ \t][ \t]*[A-z0-9_][A-z0-9_]*[ \t$]" \
+			| awk '{printf("%s", $2); if(NF > 2) printf(" ");  for(i = 3; i <= NF; i++){printf("%s", $i)} printf("\n")}' \
+			| python -c "import sys, re; [(lambda x: print(x[0], eval(x[1])) if len(x) > 1 and re.match(r'([+-]?[Xx][0-9A-Fa-f]+|[+-]?[0-9]+|[+\-*/%<>()])+$', x[1]) else print(' '.join(x)))(i) for i in [l.split() for l in sys.stdin]]" \
+			| tr -d \\r \
+    				  >> $ofile
     done    
 done
 
