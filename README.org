@@ -14,6 +14,9 @@ hideif-extension is an extension for hideif.el.
   - Add a function that calculate 'MacroValue' to a number, to mkmcrdb.sh.
   - Add [[Note][Note]].
 
+- <2020-05-10 Sun 00:52>
+  - Fix a typo in 'Environment'.
+
 - <2020-05-05 Tue 22:19>
   - Bugfix when multiple directories are specified by option of mkmcrdb.sh.
 
@@ -112,7 +115,7 @@ mkmcrdb.sh needs python. So install a python environment before use.
 *** Environment
 
 - The source code directory is ~$SRCDIR~, and the source code directory
-  has a C source code hoge.h, hoge.h, and subdir/fuga.h like below.
+  has a C source code hoge.h, hoge.c, and subdir/fuga.h like below.
 
         : $SRCDIR/
         :   |- hoge.h
